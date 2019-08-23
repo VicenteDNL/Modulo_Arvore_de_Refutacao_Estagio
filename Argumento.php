@@ -1,4 +1,10 @@
 <?php
+
+include 'No.php';
+include 'Conclusao.php';
+include 'Premissa.php';
+
+
 class Argumento {
 
 
@@ -28,164 +34,172 @@ class Argumento {
         $negacao=$lpred->attributes()["NEG"];
 
         if ($negacao==""){
-            return $lpred->children();
+            return ['NEG'=>0, 'PREDICATIVO'=>$lpred->children()];
         }
         elseif($negacao=="~"){
-            return "~".$lpred->children();           
+            return ['NEG'=>1, 'PREDICATIVO'=>"~".$lpred->children()];         
         }
         else{
-            return "~~".$lpred->children();
+            return ['NEG'=>2, 'PREDICATIVO'=>"~~".$lpred->children()]; 
         }
     }
 
     private function condicional($condicional){
-        $antecendente =$condicional->children()[0];
-        $consequente = $condicional->children()[1];
+        $antecendente_xml =$condicional->children()[0];
+        $consequente_xml = $condicional->children()[1];
         
         
-        if ($this->childrenIsLpred($antecendente)){
-            $antecendente_str = $this->lpred($antecendente->children());
+        if ($this->childrenIsLpred($antecendente_xml)){
+            $antecendente_array = $this->lpred($antecendente_xml->children());
+            $antecendente_no = new No($antecendente_array['PREDICATIVO'],$antecendente_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+        }
+        else{
+            $antecendente_no = $this->encontraFilho($antecendente_xml);
+           
+        }
+        if ($this->childrenIsLpred($consequente_xml)){
+            $consequente_array = $this->lpred($consequente_xml->children());
+            $consequente_no = new No($consequente_array['PREDICATIVO'],$consequente_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+       
 
         }
         else{
-           $antecendente_str = $this->encontraFilho($antecendente);
+            $consequente_no = $this->encontraFilho($consequente_xml);
+           
 
         }
-        if ($this->childrenIsLpred($consequente)){
-            $consequente_str = $this->lpred($consequente->children());
-
-        }
-        else{
-           $consequente_str = $this->encontraFilho($consequente);
-
-        }
-
-        // $resposta=[
-        //     'texto'=> $primario_str."v".$secundario_str,
-        //     'esquerda_1'=>$primario_str,
-        //     'direita_1' =>$secundario_str,
-        // ];
-        return $antecendente_str."→".$consequente_str;
+        $valor = $antecendente_no->getValor()."→".$consequente_no->getValor();
+        return new No($valor,0,'CONDICIONAL',$antecendente_no,null,$consequente_no,false,null);
     }
 
     private function bicondicional($bicondicional){
-        $primario = $bicondicional->children()[0];
-        $secundario = $bicondicional->children()[1];
-        if ($this->childrenIsLpred($primario)){
-            $primario_str = $this->lpred($primario->children());
-
+        $primario_xml = $bicondicional->children()[0];
+        $secundario_xml = $bicondicional->children()[1];
+        if ($this->childrenIsLpred($primario_xml)){
+            $primario_array = $this->lpred($primario_xml->children());
+            $primario_no = new No($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+    
         }
         else{
-           $primario_str = $this->encontraFilho($primario);
-
+            $primario_no = $this->encontraFilho($primario_xml);
         }
-        if ($this->childrenIsLpred($secundario)){
-            $secundario_str = $this->lpred($secundario->children());
-
+        if ($this->childrenIsLpred($secundario_xml)){
+            $secundario_array = $this->lpred($secundario_xml->children());
+            $secundario_no = new No($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
         }
         else{
-           $secundario_str = $this->encontraFilho($secundario);
-
+            $secundario_no = $this->encontraFilho($secundario_xml);
         }
-        return $primario_str."↔".$secundario_str;
-
+        $valor = $primario_no->getValor()."↔".$secundario_no->getValor();
+        return new No($valor,0,'BICONDICIONAL',$primario_no,null,$secundario_no,false,null);
     }
 
     private function disjuncao($disjuncao){
-        $primario = $disjuncao->children()[0];
-        $secundario = $disjuncao->children()[1];
-        if ($this->childrenIsLpred($primario)){
-            $primario_str = $this->lpred($primario->children());
-
+        $primario_xml = $disjuncao->children()[0];
+        $secundario_xml = $disjuncao->children()[1];
+        if ($this->childrenIsLpred($primario_xml)){
+            $primario_array = $this->lpred($primario_xml->children());
+            $primario_no = new No($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
         }
         else{
-           $primario_str = $this->encontraFilho($primario);
-
+            $primario_no = $this->encontraFilho($primario_xml);
+           
         }
-        if ($this->childrenIsLpred($secundario)){
-            $secundario_str = $this->lpred($secundario->children());
-
+        if ($this->childrenIsLpred($secundario_xml)){
+            $secundario_array = $this->lpred($secundario_xml->children());
+            $secundario_no = new No($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
         }
         else{
-           $secundario_str = $this->encontraFilho($secundario);
+            $secundario_no = $this->encontraFilho($secundario_xml);
+        
 
         }
-        return $primario_str."v".$secundario_str;
+        $valor = $primario_no->getValor()."v".$secundario_no->getValor();
+        return new No($valor,0,'DISJUNCAO',$primario_no,null,$secundario_no,false,null);
+
 
     }
 
     private function conjuncao($conjuncao){
-        $primario = $conjuncao->children()[0];
-        $secundario = $conjuncao->children()[1];
-        if ($this->childrenIsLpred($primario)){
-            $primario_str = $this->lpred($primario->children());
+        $primario_xml = $conjuncao->children()[0];
+        $secundario_xml = $conjuncao->children()[1];
+        if ($this->childrenIsLpred($primario_xml)){
+            $primario_array = $this->lpred($primario_xml->children());
+            $primario_no = new No($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+        }
+        else{
+            $primario_no = $this->encontraFilho($primario_xml); 
+
+        }
+        if ($this->childrenIsLpred($secundario_xml)){
+            $secundario_array = $this->lpred($secundario_xml->children());
+            $secundario_no = new No($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
 
         }
         else{
-           $primario_str = $this->encontraFilho($primario);
+            $secundario_no = $this->encontraFilho($secundario_xml);
 
         }
-        if ($this->childrenIsLpred($secundario)){
-            $secundario_str = $this->lpred($secundario->children());
+        $valor = $primario_no->getValor()."^". $secundario_no->getValor();
+        return new No($valor,0,'CONJUNCAO',$primario_no,null,$secundario_no,false,null);
 
-        }
-        else{
-           $secundario_str = $this->encontraFilho($secundario);
-
-        }
-        return $primario_str."^".$secundario_str;
+    
 
     }
 
     public function premissa($premissa){
         if ($premissa->getName()=="PREMISSA"){
-            $premissa_str="";
             if($this->childrenIsLpred($premissa)){
-                $premissa_str = $this->lpred($premissa->children());
+                $premissa_array = $this->lpred($premissa->children());
+                $valor_no = new No ($premissa_array['PREDICATIVO'],$premissa_array['NEG'],'PREMISSA',null,null,null,false,null);
+                return new Premissa($valor_no->getValor(), $valor_no);
             }
             else{
                 $nome = $premissa->children()->getName();
                 if($nome=="CONDICIONAL"){
-                    $premissa_str = $premissa_str.$this->condicional($premissa->children());
+                    $valor = $this->condicional($premissa->children());
                 }
                 elseif($nome=="BICONDICIONAL"){
-                    $premissa_str = $premissa_str.$this->bicondicional($premissa->children());
+                    $valor = $this->bicondicional($premissa->children());
                 }
                 elseif($nome=="DISJUNCAO"){
-                    $premissa_str = $premissa_str.$this->disjuncao($premissa->children());
+                    $valor = $this->disjuncao($premissa->children());
                 }
                 elseif($nome=="CONJUNCAO"){
-                    $conclusao_str = $premissa_str.$this->conjuncao($premissa->children());
+                    $valor = $this->conjuncao($premissa->children());
                 }
             }
-            return $premissa_str;
+            return new Premissa($valor->getValor(), $valor);
         }
         return false;
     }
 
     public function conclusao ($conclusao){
+
         if ($conclusao->getName()=="CONCLUSAO"){
-            $conclusao_str="|- ";
             if($this->childrenIsLpred($conclusao)){
-                $conclusao_str =$conclusao_str.$this->lpred($conclusao->children());
+                $conclusao_array = $this->lpred($conclusao->children());
+                $valor_no = new No($conclusao_array['PREDICATIVO'],$conclusao_array['NEG'],'CONCLUSAO',null,null,null,false,null);
+                return new Conclusao("|- ".$valor_no->getValor(), $valor_no);
             }
             else{
                 $nome = $conclusao->children()->getName(); 
 
                 if($nome=="CONDICIONAL"){
-                    $conclusao_str = $conclusao_str.$this->condicional($conclusao->children());
+                    $valor = $this->condicional($conclusao->children());
                 }
                 elseif($nome=="BICONDICIONAL"){
-                    $conclusao_str = $conclusao_str.$this->bicondicional($conclusao->children());
+                    $valor = $this->bicondicional($conclusao->children());
                 }
                 elseif($nome=="DISJUNCAO"){
-                    $conclusao_str = $conclusao_str.$this->disjuncao($conclusao->children());
+                    $valor = $this->disjuncao($conclusao->children());
+                   
                 }
                 elseif($nome=="CONJUNCAO"){
-                    $conclusao_str = $conclusao_str.$this->conjuncao($conclusao->children());
+                    $valor = $this->conjuncao($conclusao->children());
                 }
             }
-            return $conclusao_str;
+            return new Conclusao("|- ".$valor->getValor(), $valor);;
 
         }
         return false;
