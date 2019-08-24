@@ -1,6 +1,6 @@
 <?php
 
-include 'No.php';
+include 'Predicado.php';
 include 'Conclusao.php';
 include 'Premissa.php';
 
@@ -32,15 +32,14 @@ class Argumento {
 
     private function lpred($lpred){
         $negacao=$lpred->attributes()["NEG"];
-
         if ($negacao==""){
-            return ['NEG'=>0, 'PREDICATIVO'=>$lpred->children()];
+            return ['NEG'=>0, 'PREDICATIVO'=>$lpred->children()->__toString()];
         }
         elseif($negacao=="~"){
-            return ['NEG'=>1, 'PREDICATIVO'=>"~".$lpred->children()];         
+            return ['NEG'=>1, 'PREDICATIVO'=>$lpred->children()->__toString()];         
         }
         else{
-            return ['NEG'=>2, 'PREDICATIVO'=>"~~".$lpred->children()]; 
+            return ['NEG'=>2, 'PREDICATIVO'=>$lpred->children()->__toString()]; 
         }
     }
 
@@ -50,8 +49,9 @@ class Argumento {
         
         
         if ($this->childrenIsLpred($antecendente_xml)){
+       
             $antecendente_array = $this->lpred($antecendente_xml->children());
-            $antecendente_no = new No($antecendente_array['PREDICATIVO'],$antecendente_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $antecendente_no = new Predicado($antecendente_array['PREDICATIVO'],$antecendente_array['NEG'],'PREDICATIVO',null,null);
         }
         else{
             $antecendente_no = $this->encontraFilho($antecendente_xml);
@@ -59,7 +59,7 @@ class Argumento {
         }
         if ($this->childrenIsLpred($consequente_xml)){
             $consequente_array = $this->lpred($consequente_xml->children());
-            $consequente_no = new No($consequente_array['PREDICATIVO'],$consequente_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $consequente_no = new Predicado($consequente_array['PREDICATIVO'],$consequente_array['NEG'],'PREDICATIVO',null,null);
        
 
         }
@@ -69,7 +69,7 @@ class Argumento {
 
         }
         $valor = $antecendente_no->getValor()."→".$consequente_no->getValor();
-        return new No($valor,0,'CONDICIONAL',$antecendente_no,null,$consequente_no,false,null);
+        return new Predicado($valor,0,'CONDICIONAL',$antecendente_no,$consequente_no);
     }
 
     private function bicondicional($bicondicional){
@@ -77,7 +77,7 @@ class Argumento {
         $secundario_xml = $bicondicional->children()[1];
         if ($this->childrenIsLpred($primario_xml)){
             $primario_array = $this->lpred($primario_xml->children());
-            $primario_no = new No($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $primario_no = new Predicado($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null);
     
         }
         else{
@@ -85,13 +85,13 @@ class Argumento {
         }
         if ($this->childrenIsLpred($secundario_xml)){
             $secundario_array = $this->lpred($secundario_xml->children());
-            $secundario_no = new No($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $secundario_no = new Predicado($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null);
         }
         else{
             $secundario_no = $this->encontraFilho($secundario_xml);
         }
         $valor = $primario_no->getValor()."↔".$secundario_no->getValor();
-        return new No($valor,0,'BICONDICIONAL',$primario_no,null,$secundario_no,false,null);
+        return new Predicado($valor,0,'BICONDICIONAL',$primario_no,$secundario_no);
     }
 
     private function disjuncao($disjuncao){
@@ -99,7 +99,7 @@ class Argumento {
         $secundario_xml = $disjuncao->children()[1];
         if ($this->childrenIsLpred($primario_xml)){
             $primario_array = $this->lpred($primario_xml->children());
-            $primario_no = new No($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $primario_no = new Predicado($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null);
         }
         else{
             $primario_no = $this->encontraFilho($primario_xml);
@@ -107,15 +107,15 @@ class Argumento {
         }
         if ($this->childrenIsLpred($secundario_xml)){
             $secundario_array = $this->lpred($secundario_xml->children());
-            $secundario_no = new No($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $secundario_no = new Predicado($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null);
         }
         else{
             $secundario_no = $this->encontraFilho($secundario_xml);
         
 
         }
-        $valor = $primario_no->getValor()."v".$secundario_no->getValor();
-        return new No($valor,0,'DISJUNCAO',$primario_no,null,$secundario_no,false,null);
+        $valor = $primario_no->getValor()."^".$secundario_no->getValor();
+        return new Predicado($valor,0,'DISJUNCAO',$primario_no,$secundario_no);
 
 
     }
@@ -125,7 +125,7 @@ class Argumento {
         $secundario_xml = $conjuncao->children()[1];
         if ($this->childrenIsLpred($primario_xml)){
             $primario_array = $this->lpred($primario_xml->children());
-            $primario_no = new No($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $primario_no = new Predicado($primario_array['PREDICATIVO'],$primario_array['NEG'],'PREDICATIVO',null,null);
         }
         else{
             $primario_no = $this->encontraFilho($primario_xml); 
@@ -133,7 +133,7 @@ class Argumento {
         }
         if ($this->childrenIsLpred($secundario_xml)){
             $secundario_array = $this->lpred($secundario_xml->children());
-            $secundario_no = new No($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null,null,false,null);
+            $secundario_no = new Predicado($secundario_array['PREDICATIVO'],$secundario_array['NEG'],'PREDICATIVO',null,null);
 
         }
         else{
@@ -141,7 +141,7 @@ class Argumento {
 
         }
         $valor = $primario_no->getValor()."^". $secundario_no->getValor();
-        return new No($valor,0,'CONJUNCAO',$primario_no,null,$secundario_no,false,null);
+        return new Predicado($valor,0,'CONJUNCAO',$primario_no,$secundario_no);
 
     
 
@@ -150,13 +150,16 @@ class Argumento {
     public function premissa($premissa){
         if ($premissa->getName()=="PREMISSA"){
             if($this->childrenIsLpred($premissa)){
+
                 $premissa_array = $this->lpred($premissa->children());
-                $valor_no = new No ($premissa_array['PREDICATIVO'],$premissa_array['NEG'],'PREMISSA',null,null,null,false,null);
+                $valor_no = new Predicado ($premissa_array['PREDICATIVO'],$premissa_array['NEG'],'PREMISSA',null,null);
+              
                 return new Premissa($valor_no->getValor(), $valor_no);
             }
             else{
                 $nome = $premissa->children()->getName();
                 if($nome=="CONDICIONAL"){
+                    
                     $valor = $this->condicional($premissa->children());
                 }
                 elseif($nome=="BICONDICIONAL"){
@@ -175,17 +178,18 @@ class Argumento {
     }
 
     public function conclusao ($conclusao){
-
+    
         if ($conclusao->getName()=="CONCLUSAO"){
             if($this->childrenIsLpred($conclusao)){
                 $conclusao_array = $this->lpred($conclusao->children());
-                $valor_no = new No($conclusao_array['PREDICATIVO'],$conclusao_array['NEG'],'CONCLUSAO',null,null,null,false,null);
-                return new Conclusao("|- ".$valor_no->getValor(), $valor_no);
+                $valor_no = new Predicado($conclusao_array['PREDICATIVO'],$conclusao_array['NEG'],'CONCLUSAO',null,null);
+                return new Conclusao($valor_no->getValor(),"|- ", $valor_no);
             }
             else{
                 $nome = $conclusao->children()->getName(); 
 
                 if($nome=="CONDICIONAL"){
+
                     $valor = $this->condicional($conclusao->children());
                 }
                 elseif($nome=="BICONDICIONAL"){
@@ -199,7 +203,7 @@ class Argumento {
                     $valor = $this->conjuncao($conclusao->children());
                 }
             }
-            return new Conclusao("|- ".$valor->getValor(), $valor);;
+            return new Conclusao($valor->getValor(),"|- ",$valor);;
 
         }
         return false;

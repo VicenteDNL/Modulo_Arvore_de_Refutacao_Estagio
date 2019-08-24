@@ -2,9 +2,11 @@
  class Conclusao {
      protected $valor_str;
      protected $valor_obj;
+     protected $simbolo;
 
-     function __construct($valor_str,$valor_obj) {
+     function __construct($valor_str,$simbolo,$valor_obj) {
         $this->valor_str=$valor_str;
+        $this->simbolo=$simbolo;
         $this->valor_obj=$valor_obj;
     }
 
@@ -22,9 +24,14 @@
 }
 
     public function setValor_obj($valor_obj){
-    $this->valor_obj=$valor_obj;
+        $this->valor_obj=$valor_obj;
         
     }
+
+    public function getSimbolo(){
+       return $this->simbolo;
+            
+        }
 
 
  }
